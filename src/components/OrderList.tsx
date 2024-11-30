@@ -1,9 +1,12 @@
 import { Order } from '@/types'
+import { PDFDownloadButton } from './OrderPDF'
 
 interface OrderListProps {
   orders: Order[];
   onStatusChange: (orderId: number, newStatus: Order['status']) => void;
 }
+
+
 
 export default function OrderList({ orders, onStatusChange }: OrderListProps) {
   const formatDate = (date: Date) => {
@@ -51,6 +54,9 @@ export default function OrderList({ orders, onStatusChange }: OrderListProps) {
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
             </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Akcje
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -82,15 +88,13 @@ export default function OrderList({ orders, onStatusChange }: OrderListProps) {
                   <option value="completed">Zrealizowane</option>
                 </select>
               </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <PDFDownloadButton order={order} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {orders.length === 0 && (
-        <div className="text-center py-4 text-gray-500">
-          Brak zamówień
-        </div>
-      )}
     </div>
   )
 }
