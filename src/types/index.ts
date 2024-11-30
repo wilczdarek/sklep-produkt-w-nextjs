@@ -6,6 +6,8 @@ export interface Product {
   name: string;
   quantity: number;
   reserved: number;
+  image?: string;       // URL obrazka
+  description?: string; // Szczegółowy opis
 }
 
 /**
@@ -22,7 +24,11 @@ export interface CartItem {
  */
 export interface Order {
   id: number;
-  items: CartItem[];
-  status: 'new' | 'accepted' | 'completed';
+  items: {
+    productId: number;
+    productName: string;
+    quantity: number;
+  }[];
+  status: 'new' | 'accepted' | 'completed' | 'cancelled';
   createdAt: Date;
 }

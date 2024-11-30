@@ -1,6 +1,7 @@
-import Navigation from '@/components/Navigation'
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { OrderProvider } from '@/contexts/OrderContext'
+import { ProductProvider } from '@/contexts/ProductContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,12 +16,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pl">
-      <body className={inter.className}>
-        <Navigation />
-        <main>
-          {children}
-        </main>
+    <html lang="en">
+      <body>
+        <ProductProvider>
+          <OrderProvider>
+            {children}
+          </OrderProvider>
+        </ProductProvider>
       </body>
     </html>
   )

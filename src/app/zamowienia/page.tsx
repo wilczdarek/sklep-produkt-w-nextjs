@@ -1,101 +1,76 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useOrders } from '@/contexts/OrderContext'
+import { useProducts } from '@/contexts/ProductContext'
 import OrderList from '@/components/OrderList'
-import { Order, Product } from '@/types'
+import Link from 'next/link'
+import { Order } from '@/types'
 
 /**
  * Komponent strony zamówień
- * Wyświetla listę wszystkich złożonych zamówień i umożliwia zmianę ich statusu
  */
 export default function OrdersPage() {
-  // Stan przechowujący listę wszystkich zamówień
-  const [orders, setOrders] = useState<Order[]>([])
-
-  // Wczytaj zamówienia z localStorage przy pierwszym renderowaniu
-  useEffect(() => {
-    try {
-      const savedOrders = localStorage.getItem('orders')
-      if (savedOrders) {
-        // Parsowanie zapisanych zamówień
-        const parsedOrders = JSON.parse(savedOrders)
-        // Konwersja stringów dat na obiekty Date
-        const ordersWithDates = parsedOrders.map((order: any) => ({
-          ...order,
-          createdAt: new Date(order.createdAt)
-        }))
-        // Sortowanie zamówień od najnowszych
-        const sortedOrders = ordersWithDates.sort((a: Order, b: Order) => 
-          b.createdAt.getTime() - a.createdAt.getTime()
-        )
-        setOrders(sortedOrders)
-      }
-    } catch (error) {
-      console.error('Błąd podczas wczytywania zamówień:', error)
-      setOrders([])
-    }
-  }, [])
+  // Pobierz funkcje i dane z kontekstów
+  const { orders, updateOrderStatus, refreshOrders } = useOrders()
+  const { unreserveProducts, completeOrder } = useProducts()
 
   /**
-   * Aktualizuje status zamówienia i stan produktów
-   * @param orderId - ID zamówienia do aktualizacji
+   * Funkcja obsługująca zmianę statusu zamówienia
+   * @param orderId - ID zamówienia
    * @param newStatus - Nowy status zamówienia
    */
-  const handleStatusChange = (orderId: number, newStatus: Order['status']) => {
-    setOrders(currentOrders => {
-      const updatedOrders = currentOrders.map(order => {
-        if (order.id !== orderId) return order
+  const handleOrderStatusChange = (orderId: number, newStatus: Order['status']) => {
+    // Znajdź zamówienie do aktualizacji
+    const orderToUpdate = orders.find(order => order.id === orderId)
+    if (!orderToUpdate) return
 
-        // Jeśli zamówienie jest realizowane, zaktualizuj stany produktów
-        if (newStatus === 'completed' && order.status !== 'completed') {
-          try {
-            // Wczytaj aktualne produkty
-            const savedProducts = localStorage.getItem('products')
-            if (savedProducts) {
-              const products = JSON.parse(savedProducts)
-              // Aktualizuj stany produktów - zeruj rezerwacje
-              const updatedProducts = products.map((product: Product) => {
-                const orderItem = order.items.find(item => item.productId === product.id)
-                if (!orderItem) return product
+    // Obsłuż różne przypadki zmiany statusu
+    if (newStatus === 'cancelled' && orderToUpdate.status !== 'cancelled') {
+      // Przywróć produkty na stan przy anulowaniu zamówienia
+      unreserveProducts(orderToUpdate.items)
+    } else if (newStatus === 'completed' && orderToUpdate.status !== 'completed') {
+      // Zeruj rezerwację przy realizacji zamówienia
+      completeOrder(orderToUpdate.items)
+    }
 
-                return {
-                  ...product,
-                  reserved: Math.max(0, product.reserved - orderItem.quantity) // Zmniejsz rezerwację (nie mniej niż 0)
-                }
-              })
-              // Zapisz zaktualizowane produkty
-              localStorage.setItem('products', JSON.stringify(updatedProducts))
-            }
-          } catch (error) {
-            console.error('Błąd podczas aktualizacji produktów:', error)
-          }
-        }
-
-        // Zwróć zamówienie z nowym statusem
-        return { ...order, status: newStatus }
-      })
-
-      // Zapisz zaktualizowane zamówienia
-      try {
-        localStorage.setItem('orders', JSON.stringify(updatedOrders))
-      } catch (error) {
-        console.error('Błąd podczas zapisywania zamówień:', error)
-      }
-
-      return updatedOrders
-    })
+    // Aktualizuj status zamówienia
+    updateOrderStatus(orderId, newStatus)
   }
 
   return (
     <div className="container mx-auto p-4">
       {/* Nagłówek strony */}
-      <h1 className="text-2xl font-bold text-blue-600 mb-4">Lista zamówień</h1>
+      <div className="flex justify-between items-center mb-6">
+        <div className="space-x-4">
+          {/* Link do listy produktów */}
+          <Link
+            href="/"
+            className="text-2xl font-bold text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600"
+          >
+            Lista produktów
+          </Link>
+          {/* Link do aktywnej strony zamówień */}
+          <Link
+            href="/zamowienia"
+            className="text-2xl font-bold text-blue-600 border-b-2 border-blue-600"
+          >
+            Lista zamówień
+          </Link>
+        </div>
+        {/* Przycisk odświeżania listy */}
+        <button
+          onClick={refreshOrders}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+        >
+          Odśwież
+        </button>
+      </div>
       
-      {/* Wyświetlanie listy zamówień lub informacji o braku zamówień */}
+      {/* Lista zamówień lub komunikat o braku zamówień */}
       {orders.length > 0 ? (
         <OrderList 
           orders={orders} 
-          onStatusChange={handleStatusChange}
+          onStatusChange={handleOrderStatusChange}
         />
       ) : (
         <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500">

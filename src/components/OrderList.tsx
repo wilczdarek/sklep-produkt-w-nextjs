@@ -6,9 +6,33 @@ interface OrderListProps {
   onStatusChange: (orderId: number, newStatus: Order['status']) => void;
 }
 
+/**
+ * Mapa statusów zamówień
+ * Definiuje wszystkie możliwe statusy i ich etykiety
+ */
+const STATUS_MAP: Record<Order['status'], string> = {
+  new: 'Nowe',
+  accepted: 'Przyjęte',
+  completed: 'Zrealizowane',
+  cancelled: 'Anulowane'  // Dodano brakujący status
+}
 
+/**
+ * Mapa kolorów dla statusów
+ * Definiuje style dla każdego statusu
+ */
+const STATUS_COLORS: Record<Order['status'], string> = {
+  new: 'bg-yellow-100 text-yellow-800',
+  accepted: 'bg-blue-100 text-blue-800',
+  completed: 'bg-green-100 text-green-800',
+  cancelled: 'bg-red-100 text-red-800'  // Dodano styl dla anulowanych
+}
 
 export default function OrderList({ orders, onStatusChange }: OrderListProps) {
+  /**
+   * Formatuje datę do lokalnego formatu
+   * @param date - Data do sformatowania
+   */
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString('pl-PL', {
       year: 'numeric',
@@ -19,22 +43,20 @@ export default function OrderList({ orders, onStatusChange }: OrderListProps) {
     })
   }
 
-  const getStatusLabel = (status: Order['status']) => {
-    const statusMap = {
-      new: 'Nowe',
-      accepted: 'Przyjęte',
-      completed: 'Zrealizowane'
-    }
-    return statusMap[status]
+  /**
+   * Zwraca etykietę dla danego statusu
+   * @param status - Status zamówienia
+   */
+  const getStatusLabel = (status: Order['status']): string => {
+    return STATUS_MAP[status] || 'Nieznany'
   }
 
-  const getStatusColor = (status: Order['status']) => {
-    const colorMap = {
-      new: 'bg-yellow-100 text-yellow-800',
-      accepted: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800'
-    }
-    return colorMap[status]
+  /**
+   * Zwraca klasę CSS dla danego statusu
+   * @param status - Status zamówienia
+   */
+  const getStatusColor = (status: Order['status']): string => {
+    return STATUS_COLORS[status] || 'bg-gray-100 text-gray-800'
   }
 
   return (
@@ -82,14 +104,33 @@ export default function OrderList({ orders, onStatusChange }: OrderListProps) {
                   value={order.status}
                   onChange={(e) => onStatusChange(order.id, e.target.value as Order['status'])}
                   className={`text-sm font-medium px-3 py-1 rounded-full ${getStatusColor(order.status)}`}
+                  disabled={order.status === 'completed' || order.status === 'cancelled'}
                 >
-                  <option value="new">Nowe</option>
-                  <option value="accepted">Przyjęte</option>
-                  <option value="completed">Zrealizowane</option>
+                  {Object.entries(STATUS_MAP).map(([value, label]) => (
+                    <option 
+                      key={value} 
+                      value={value}
+                      disabled={
+                        order.status === 'completed' || 
+                        order.status === 'cancelled' ||
+                        (order.status === 'accepted' && value === 'new')
+                      }
+                    >
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm">
+              <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                 <PDFDownloadButton order={order} />
+                {order.status === 'new' && (
+                  <button
+                    onClick={() => onStatusChange(order.id, 'cancelled')}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Anuluj
+                  </button>
+                )}
               </td>
             </tr>
           ))}

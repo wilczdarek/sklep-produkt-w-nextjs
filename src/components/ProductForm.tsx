@@ -3,98 +3,91 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Product } from '@/types'
 
 interface ProductFormProps {
-  onSubmit: (name: string, quantity: number) => void;
+  onSubmit: (name: string, quantity: number, image?: string, description?: string) => void;
   onClose: () => void;
-  initialData?: Product; // Opcjonalne dane do edycji
-  title?: string; // Opcjonalny tytuł formularza
+  initialData?: Product;
+  title: string;
 }
 
-export default function ProductForm({ onSubmit, onClose, initialData, title = "Dodaj nowy produkt" }: ProductFormProps) {
+export default function ProductForm({ onSubmit, onClose, initialData, title }: ProductFormProps) {
   const [name, setName] = useState(initialData?.name || '')
-  const [quantity, setQuantity] = useState(initialData?.quantity.toString() || '')
-  const [error, setError] = useState('')
+  const [quantity, setQuantity] = useState(initialData?.quantity || 0)
+  const [image, setImage] = useState(initialData?.image || '')
+  const [description, setDescription] = useState(initialData?.description || '')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-
-    // Walidacja
-    if (!name.trim()) {
-      setError('Nazwa produktu jest wymagana')
-      return
-    }
-
-    const quantityNum = parseInt(quantity)
-    if (isNaN(quantityNum) || quantityNum <= 0) {
-      setError('Ilość musi być liczbą większą od 0')
-      return
-    }
-
-    onSubmit(name, quantityNum)
-    setName('')
-    setQuantity('')
+    onSubmit(name, quantity, image, description)
     onClose()
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          {title}
-        </h2>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-xl font-bold mb-4">{title}</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
               Nazwa produktu
             </label>
             <input
               type="text"
-              id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-              placeholder="Wprowadź nazwę produktu"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              URL obrazka
+            </label>
+            <input
+              type="url"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="quantity" className="block text-gray-700 font-medium mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Opis produktu
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
               Ilość
             </label>
             <input
               type="number"
-              id="quantity"
+              min="0"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-              placeholder="Wprowadź ilość"
-              min="1"
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
             />
           </div>
 
-          {error && (
-            <p className="text-red-500 text-sm mb-4">{error}</p>
-          )}
-
-          <div className="flex justify-end space-x-3">
+          <div className="flex justify-end space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
             >
               Anuluj
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
             >
               {initialData ? 'Zapisz zmiany' : 'Dodaj produkt'}
             </button>
