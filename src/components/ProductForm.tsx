@@ -22,58 +22,70 @@ export default function ProductForm({ onSubmit, onClose, initialData, title }: P
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h2 className="text-xl font-bold mb-4">{title}</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4 text-green-700">{title}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Nazwa produktu
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-md 
+                bg-green-50 text-green-800 
+                focus:outline-none focus:ring-2 focus:ring-green-500 
+                placeholder-green-700 placeholder-opacity-50"
               required
             />
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              URL obrazka
-            </label>
-            <input
-              type="url"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Opis produktu
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Ilość
             </label>
             <input
               type="number"
-              min="0"
               value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+              min="0"
+              className="w-full px-3 py-2 border rounded-md 
+                bg-green-50 text-green-800 
+                focus:outline-none focus:ring-2 focus:ring-green-500 
+                placeholder-green-700 placeholder-opacity-50"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              URL obrazka (opcjonalnie)
+            </label>
+            <input
+              type="text"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md 
+                bg-green-50 text-green-800 
+                focus:outline-none focus:ring-2 focus:ring-green-500 
+                placeholder-green-700 placeholder-opacity-50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Opis (opcjonalnie)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md 
+                bg-green-50 text-green-800 
+                focus:outline-none focus:ring-2 focus:ring-green-500 
+                placeholder-green-700 placeholder-opacity-50"
+              rows={3}
             />
           </div>
 
@@ -87,7 +99,7 @@ export default function ProductForm({ onSubmit, onClose, initialData, title }: P
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
             >
               {initialData ? 'Zapisz zmiany' : 'Dodaj produkt'}
             </button>

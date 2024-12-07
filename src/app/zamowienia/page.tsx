@@ -5,6 +5,8 @@ import { useProducts } from '@/contexts/ProductContext'
 import OrderList from '@/components/OrderList'
 import Link from 'next/link'
 import { Order } from '@/types'
+import PageHeader from '@/components/PageHeader'
+import Navigation from '@/components/Navigation'
 
 /**
  * Komponent strony zamówień
@@ -39,28 +41,13 @@ export default function OrdersPage() {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Nagłówek strony */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="space-x-4">
-          {/* Link do listy produktów */}
-          <Link
-            href="/"
-            className="text-2xl font-bold text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600"
-          >
-            Lista produktów
-          </Link>
-          {/* Link do aktywnej strony zamówień */}
-          <Link
-            href="/zamowienia"
-            className="text-2xl font-bold text-blue-600 border-b-2 border-blue-600"
-          >
-            Lista zamówień
-          </Link>
-        </div>
-        {/* Przycisk odświeżania listy */}
+      <Navigation currentPath="orders" />
+      
+      <div className="flex justify-between items-center mt-8 mb-4">
+        <PageHeader title="Zamówienia" />
         <button
           onClick={refreshOrders}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
         >
           Odśwież
         </button>

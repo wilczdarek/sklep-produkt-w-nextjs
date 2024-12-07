@@ -1,5 +1,7 @@
 import { Order } from '@/types'
 import { PDFDownloadButton } from './OrderPDF'
+import { useState } from 'react'
+import { Pagination } from './Pagination'
 
 interface OrderListProps {
   orders: Order[];
@@ -29,6 +31,15 @@ const STATUS_COLORS: Record<Order['status'], string> = {
 }
 
 export default function OrderList({ orders, onStatusChange }: OrderListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  
+  // Oblicz indeksy dla aktualnej strony
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = orders.slice(indexOfFirstItem, indexOfLastItem);
+
   /**
    * Formatuje datę do lokalnego formatu
    * @param date - Data do sformatowania
@@ -60,82 +71,92 @@ export default function OrderList({ orders, onStatusChange }: OrderListProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID zamówienia
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Data złożenia
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Produkty
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Akcje
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {orders.map((order) => (
-            <tr key={order.id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                #{order.id}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {formatDate(order.createdAt)}
-              </td>
-              <td className="px-6 py-4 text-sm text-gray-500">
-                <div className="space-y-1">
-                  {order.items.map((item) => (
-                    <div key={item.productId}>
-                      {item.productName} - {item.quantity} szt.
-                    </div>
-                  ))}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <select
-                  value={order.status}
-                  onChange={(e) => onStatusChange(order.id, e.target.value as Order['status'])}
-                  className={`text-sm font-medium px-3 py-1 rounded-full ${getStatusColor(order.status)}`}
-                  disabled={order.status === 'completed' || order.status === 'cancelled'}
-                >
-                  {Object.entries(STATUS_MAP).map(([value, label]) => (
-                    <option 
-                      key={value} 
-                      value={value}
-                      disabled={
-                        order.status === 'completed' || 
-                        order.status === 'cancelled' ||
-                        (order.status === 'accepted' && value === 'new')
-                      }
-                    >
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                <PDFDownloadButton order={order} />
-                {order.status === 'new' && (
-                  <button
-                    onClick={() => onStatusChange(order.id, 'cancelled')}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Anuluj
-                  </button>
-                )}
-              </td>
+    <div className="space-y-4">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-green-50">
+            <tr>
+              <th scope="col" className="px-6 py-2text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                ID zamówienia
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                Data złożenia
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                Produkty
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                Akcje
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentItems.map((order) => (
+              <tr key={order.id}>
+                <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900">
+                  #{order.id}
+                </td>
+                <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
+                  {formatDate(order.createdAt)}
+                </td>
+                <td className="px-6 py-2 text-sm text-gray-500">
+                  <div className="space-y-1">
+                    {order.items.map((item) => (
+                      <div key={item.productId}>
+                        {item.productName} - {item.quantity} szt.
+                      </div>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-6 py-2 whitespace-nowrap">
+                  <select
+                    value={order.status}
+                    onChange={(e) => onStatusChange(order.id, e.target.value as Order['status'])}
+                    className={`text-sm font-medium px-3 py-1 rounded-full ${getStatusColor(order.status)}`}
+                    disabled={order.status === 'completed' || order.status === 'cancelled'}
+                  >
+                    {Object.entries(STATUS_MAP).map(([value, label]) => (
+                      <option 
+                        key={value} 
+                        value={value}
+                        disabled={
+                          order.status === 'completed' || 
+                          order.status === 'cancelled' ||
+                          (order.status === 'accepted' && value === 'new')
+                        }
+                      >
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="px-6 py-2 whitespace-nowrap text-sm space-x-2">
+                  <PDFDownloadButton order={order} />
+                  {order.status === 'new' && (
+                    <button
+                      onClick={() => onStatusChange(order.id, 'cancelled')}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Anuluj
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }

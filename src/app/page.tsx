@@ -9,6 +9,8 @@ import type { Product, Order } from '@/types'
 import Link from 'next/link'
 import { useOrders } from '@/contexts/OrderContext'
 import { useProducts } from '@/contexts/ProductContext'
+import PageHeader from '@/components/PageHeader'
+import Navigation from '@/components/Navigation'
 
 export default function HomePage() {
   const { products, reserveProducts, updateProducts } = useProducts()
@@ -191,24 +193,13 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <div className="space-x-4">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-blue-600 border-b-2 border-blue-600"
-          >
-            Lista produktów
-          </Link>
-          <Link
-            href="/zamowienia"
-            className="text-2xl font-bold text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600"
-          >
-            Lista zamówień
-          </Link>
-        </div>
+      <Navigation currentPath="products" />
+      
+      <div className="flex justify-between items-center mt-8 mb-4">
+        <PageHeader title="Produkty" />
         <button
           onClick={() => setIsFormOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
         >
           Dodaj produkt
         </button>

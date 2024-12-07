@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Product } from '@/types'
 import ProductDetailsModal from './ProductDetailsModal'
+import Pagination from './Pagination'
 
 interface ProductListProps {
   products: Product[];
@@ -12,37 +13,45 @@ interface ProductListProps {
 
 export default function ProductList({ products, onAddToCart, onEdit, onDelete }: ProductListProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  
+  // Oblicz indeksy dla aktualnej strony
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = products.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-300">
+          <thead className="bg-green-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="w-1/4 px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                 Produkt
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="w-1/4 px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                 Opis
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="w-1/6 px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                 Dostępność
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="w-1/6 px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                 Zarezerwowano
               </th>
-              <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="w-1/6 px-6 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">
                 Akcje
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
+            {currentItems.map((product) => (
               <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                   {product.name}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-2 whitespace-nowrap">
                   <button
                     onClick={() => setSelectedProduct(product)}
                     className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800"
@@ -66,13 +75,13 @@ export default function ProductList({ products, onAddToCart, onEdit, onDelete }:
                     <span>Szczegóły</span>
                   </button>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                   {product.quantity} szt.
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                   {product.reserved} szt.
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                   <div className="flex justify-center space-x-2">
                     {/* Przycisk dodawania do koszyka */}
                     <button
@@ -116,6 +125,14 @@ export default function ProductList({ products, onAddToCart, onEdit, onDelete }:
           </tbody>
         </table>
       </div>
+      
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
       {/* Modal ze szczegółami */}
       {selectedProduct && (
@@ -124,6 +141,6 @@ export default function ProductList({ products, onAddToCart, onEdit, onDelete }:
           onClose={() => setSelectedProduct(null)}
         />
       )}
-    </>
+    </div>
   )
 }

@@ -1,26 +1,34 @@
 import Link from 'next/link'
 
-export default function Navigation() {
+interface NavigationProps {
+  currentPath: 'products' | 'orders';
+}
+
+export default function Navigation({ currentPath }: NavigationProps) {
   return (
-    <nav className="bg-blue-600 shadow-lg">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center h-16">
-          <div className="flex space-x-4">
-            <Link 
-              href="/" 
-              className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Produkty
-            </Link>
-            <Link 
-              href="/zamowienia" 
-              className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Zamówienia
-            </Link>
-          </div>
-        </div>
-      </div>
-    </nav>
-  )
+    <div className="space-x-4">
+      <Link
+        href="/"
+        className={`text-xl font-semibold px-4 py-2 rounded-lg bg-white shadow-sm 
+        transition-all duration-200 hover:bg-green-50
+        ${currentPath === 'products' 
+          ? 'text-green-700 border-b-2 border-green-600 bg-green-50' 
+          : 'text-stone-400 border-b-2 border-transparent hover:text-stone-600'
+        }`}
+      >
+        Lista produktów
+      </Link>
+      <Link
+        href="/zamowienia"
+        className={`text-xl font-semibold px-4 py-2 rounded-lg bg-white shadow-sm 
+        transition-all duration-200 hover:bg-green-50
+        ${currentPath === 'orders' 
+          ? 'text-green-700 border-b-2 border-green-600 bg-green-50' 
+          : 'text-stone-400 border-b-2 border-transparent hover:text-stone-600'
+        }`}
+      >
+        Lista zamówień
+      </Link>
+    </div>
+  );
 }
