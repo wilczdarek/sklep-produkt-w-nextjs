@@ -1,5 +1,5 @@
 import { Order } from '@/types'
-import { PDFDownloadButton } from './OrderPDF'
+import { PDFDownloadButton } from './PDFDownloadButton'
 import { useState } from 'react'
 import Pagination from './Pagination'
 

@@ -1,194 +1,187 @@
-// Importy z biblioteki do generowania PDF
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Font } from '@react-pdf/renderer'
-// Import typu dla elementów React
-import type { ReactElement } from 'react'
-// Import typu dla stylów PDF
-import type { Style } from '@react-pdf/types'
-// Import własnych typów
-import type { Order } from '@/types'
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Order } from '@/types';
 
-/**
- * Rejestracja fontu Roboto wspierającego polskie znaki
- * Font jest pobierany z CDN, co eliminuje potrzebę lokalnego przechowywania
- */
+// Rejestracja lokalnych czcionek
 Font.register({
   family: 'Roboto',
-  src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf'
-})
+  fonts: [
+    {
+      src: '/fonts/Roboto-Regular.ttf',
+      fontWeight: 'normal',
+    },
+    {
+      src: '/fonts/Roboto-Bold.ttf',
+      fontWeight: 'bold',
+    }
+  ]
+});
 
-/**
- * Definicje stylów dla dokumentu PDF
- * Każdy styl jest jawnie typowany jako Style dla lepszej kontroli typów
- */
+interface OrderPDFProps {
+  order: Order;
+}
+
+// Definicja kolorów zgodnych z aplikacją
+const colors = {
+  green: {
+    light: '#f0fdf4',  // bg-green-50
+    medium: '#22c55e', // text-green-500
+    dark: '#15803d',   // text-green-700
+  },
+  gray: {
+    light: '#f9fafb',
+    medium: '#6b7280',
+    dark: '#374151',
+  }
+};
+
 const styles = StyleSheet.create({
-  // Styl dla całej strony
   page: {
-    flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
     padding: 30,
-    fontFamily: 'Roboto'
-  } as Style,
-  
-  // Styl dla nagłówka dokumentu
+    backgroundColor: '#ffffff',
+    fontFamily: 'Roboto',
+  },
   header: {
+    backgroundColor: colors.green.light,
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 8,
+  },
+  headerTitle: {
+    color: colors.green.dark,
     fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-    fontFamily: 'Roboto'
-  } as Style,
-  
-  // Styl dla głównej sekcji dokumentu
-  section: {
-    margin: 10,
-    padding: 10,
-    flexGrow: 1
-  } as Style,
-  
-  // Styl dla informacji o zamówieniu
+    fontWeight: 'bold',
+    marginBottom: 8,
+    fontFamily: 'Roboto',
+  },
   orderInfo: {
+    color: colors.gray.medium,
+    fontSize: 12,
+    marginBottom: 4,
+    fontFamily: 'Roboto',
+  },
+  section: {
     marginBottom: 20,
-    fontFamily: 'Roboto'
-  } as Style,
-  
-  // Styl dla tabeli produktów
+  },
+  sectionTitle: {
+    color: colors.green.dark,
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    padding: 8,
+    backgroundColor: colors.green.light,
+    borderRadius: 4,
+    fontFamily: 'Roboto',
+  },
   table: {
-    display: 'table' as const,
+    display: 'table',
     width: '100%',
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderColor: '#000',
-    marginBottom: 20
-  } as Style,
-  
-  // Styl dla wiersza tabeli
+    marginBottom: 20,
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: colors.green.light,
+    borderBottomColor: colors.green.medium,
+    borderBottomWidth: 1,
+    padding: 8,
+  },
+  tableHeaderCell: {
+    color: colors.green.dark,
+    fontSize: 12,
+    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+  },
   tableRow: {
     flexDirection: 'row',
+    borderBottomColor: colors.gray.light,
     borderBottomWidth: 1,
-    borderBottomColor: '#000',
-    minHeight: 30,
-    alignItems: 'center'
-  } as Style,
-  
-  // Styl dla nagłówka tabeli
-  tableHeader: {
-    backgroundColor: '#f0f0f0'
-  } as Style,
-  
-  // Styl dla komórki tabeli
+    padding: 8,
+  },
   tableCell: {
-    flex: 1,
-    padding: 5,
-    fontFamily: 'Roboto'
-  } as Style,
-  
-  // Styl dla stopki dokumentu
+    fontSize: 12,
+    color: colors.gray.dark,
+    fontFamily: 'Roboto',
+  },
+  col20: { width: '20%' },
+  col30: { width: '30%' },
+  col50: { width: '50%' },
   footer: {
     position: 'absolute',
     bottom: 30,
     left: 30,
     right: 30,
     textAlign: 'center',
+    color: colors.gray.medium,
     fontSize: 10,
-    color: 'grey',
-    fontFamily: 'Roboto'
-  } as Style
-})
-
-/**
- * Funkcja pomocnicza do formatowania statusu zamówienia
- * @param status - Status zamówienia z typu Order
- * @returns Sformatowany tekst statusu w języku polskim
- */
-const formatStatus = (status: Order['status']): string => {
-  const statusMap: Record<Order['status'], string> = {
-    new: 'Nowe',
-    accepted: 'Przyjęte',
-    completed: 'Zrealizowane'
+    borderTopColor: colors.green.light,
+    borderTopWidth: 1,
+    paddingTop: 10,
+    fontFamily: 'Roboto',
+  },
+  status: {
+    padding: 4,
+    borderRadius: 4,
+    fontSize: 12,
+    textAlign: 'center',
+    backgroundColor: colors.green.light,
+    color: colors.green.dark,
+    fontFamily: 'Roboto',
   }
-  return statusMap[status]
-}
+});
 
-/**
- * Interfejs dla props komponentu OrderDocument
- */
-interface OrderDocumentProps {
-  order: Order;
-}
+const STATUS_MAP: Record<Order['status'], string> = {
+  new: 'Nowe',
+  accepted: 'Przyjęte',
+  completed: 'Zrealizowane',
+  cancelled: 'Anulowane'
+};
 
-/**
- * Komponent generujący dokument PDF z zamówieniem
- * @param props - Właściwości komponentu zawierające dane zamówienia
- * @returns Element dokumentu PDF
- */
-const OrderDocument = ({ order }: OrderDocumentProps): ReactElement => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {/* Nagłówek dokumentu */}
-      <View style={styles.header}>
-        <Text>Zamówienie #{order.id}</Text>
-      </View>
-      
-      <View style={styles.section}>
-        {/* Informacje o zamówieniu */}
-        <View style={styles.orderInfo}>
-          <Text>Data zamówienia: {new Date(order.createdAt).toLocaleString('pl-PL')}</Text>
-          <Text>Status: {formatStatus(order.status)}</Text>
+export function OrderPDF({ order }: OrderPDFProps) {
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('pl-PL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Nagłówek */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Zamówienie #{order.id}</Text>
+          <Text style={styles.orderInfo}>Data złożenia: {formatDate(order.createdAt)}</Text>
+          <Text style={styles.orderInfo}>Status: {STATUS_MAP[order.status]}</Text>
         </View>
 
-        {/* Tabela z produktami */}
-        <View style={styles.table}>
-          {/* Nagłówek tabeli */}
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <View style={styles.tableCell}>
-              <Text>Produkt</Text>
+        {/* Szczegóły zamówienia */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Szczegóły zamówienia</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderCell, styles.col50]}>Produkt</Text>
+              <Text style={[styles.tableHeaderCell, styles.col30]}>Ilość</Text>
+              <Text style={[styles.tableHeaderCell, styles.col20]}>Status</Text>
             </View>
-            <View style={styles.tableCell}>
-              <Text>Ilość</Text>
-            </View>
+            {order.items.map((item, index) => (
+              <View key={index} style={styles.tableRow}>
+                <Text style={[styles.tableCell, styles.col50]}>{item.productName}</Text>
+                <Text style={[styles.tableCell, styles.col30]}>{item.quantity} szt.</Text>
+                <View style={[styles.col20]}>
+                  <Text style={styles.status}>{STATUS_MAP[order.status]}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-
-          {/* Wiersze z produktami */}
-          {order.items.map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-              <View style={styles.tableCell}>
-                <Text>{item.productName}</Text>
-              </View>
-              <View style={styles.tableCell}>
-                <Text>{item.quantity} szt.</Text>
-              </View>
-            </View>
-          ))}
         </View>
-      </View>
 
-      {/* Stopka dokumentu */}
-      <View style={styles.footer}>
-        <Text>Wygenerowano: {new Date().toLocaleString('pl-PL')}</Text>
-      </View>
-    </Page>
-  </Document>
-)
-
-/**
- * Interfejs dla props komponentu PDFDownloadButton
- */
-interface PDFDownloadButtonProps {
-  order: Order;
+        {/* Stopka */}
+        <Text style={styles.footer}>
+          Wygenerowano automatycznie z systemu zarządzania zamówieniami
+        </Text>
+      </Page>
+    </Document>
+  );
 }
-
-/**
- * Komponent przycisku do pobierania PDF
- * @param props - Właściwości komponentu zawierające dane zamówienia
- * @returns Przycisk umożliwiający pobranie PDF
- */
-export const PDFDownloadButton = ({ order }: PDFDownloadButtonProps): ReactElement => (
-  <PDFDownloadLink
-    document={<OrderDocument order={order} />}
-    fileName={`zamowienie-${order.id}.pdf`}
-    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
-  >
-    {({ loading }): string =>
-      loading ? 'Generowanie PDF...' : 'Pobierz PDF'
-    }
-  </PDFDownloadLink>
-)
