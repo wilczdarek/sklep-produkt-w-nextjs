@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
   },
   table: {
-    display: 'table',
+    display: 'flex',
     width: '100%',
     marginBottom: 20,
   },
@@ -125,7 +125,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.green.light,
     color: colors.green.dark,
     fontFamily: 'Roboto',
-  }
+  },
+  signatureContainer: {
+    flexDirection: 'row',
+    marginBottom: 30,
+  },
+  signatureLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray.medium,
+    marginBottom: 5,
+  },
+  signatureLabel: {
+    fontSize: 10,
+    color: colors.gray.medium,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
 });
 
 const STATUS_MAP: Record<Order['status'], string> = {
@@ -136,6 +151,8 @@ const STATUS_MAP: Record<Order['status'], string> = {
 };
 
 export function OrderPDF({ order }: OrderPDFProps) {
+  console.log('Rendering PDF for order:', order.id);
+  
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('pl-PL', {
       year: 'numeric',
@@ -154,6 +171,7 @@ export function OrderPDF({ order }: OrderPDFProps) {
           <Text style={styles.headerTitle}>Zamówienie #{order.id}</Text>
           <Text style={styles.orderInfo}>Data złożenia: {formatDate(order.createdAt)}</Text>
           <Text style={styles.orderInfo}>Status: {STATUS_MAP[order.status]}</Text>
+          <Text style={styles.orderInfo}>Zamawiający: Jan Kowalski</Text>
         </View>
 
         {/* Szczegóły zamówienia */}
@@ -177,7 +195,19 @@ export function OrderPDF({ order }: OrderPDFProps) {
           </View>
         </View>
 
-        {/* Stopka */}
+        {/* Sekcja podpisów - nowa struktura */}
+        <View style={[styles.signatureContainer, { marginTop: 50 }]}>
+          <View style={{ flex: 1, paddingRight: 20 }}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureLabel}>Zatwierdzam</Text>
+          </View>
+          
+          <View style={{ flex: 1, paddingLeft: 20 }}>
+            <View style={styles.signatureLine} />
+            <Text style={styles.signatureLabel}>Potwierdzam odbiór</Text>
+          </View>
+        </View>
+
         <Text style={styles.footer}>
           Wygenerowano automatycznie z systemu zarządzania zamówieniami
         </Text>
