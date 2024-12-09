@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ProductList from '@/components/ProductList'
 import Cart from '@/components/Cart'
 import ProductForm from '@/components/ProductForm'
@@ -11,13 +12,34 @@ import { useOrders } from '@/contexts/OrderContext'
 import { useProducts } from '@/contexts/ProductContext'
 import PageHeader from '@/components/PageHeader'
 import Navigation from '@/components/Navigation'
+import { useSearchParams } from 'next/navigation'
+import OrderEditModal from '@/components/OrderEditModal'
 
 export default function HomePage() {
-  const { products, reserveProducts, updateProducts } = useProducts()
-  const { addOrder } = useOrders()
+  const router = useRouter()
+  const { products, reserveProducts, unreserveProducts, updateProducts } = useProducts()
+  const { orders, addOrder } = useOrders()
   const [cartItems, setCartItems] = useState<{ product: Product; quantity: number }[]>([])
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  
+  const searchParams = useSearchParams()
+  const editOrderId = searchParams.get('editOrder')
+
+  // Załaduj zamówienie do edycji
+  useEffect(() => {
+    if (editOrderId) {
+      const orderToEdit = orders.find(order => order.id === parseInt(editOrderId))
+      if (orderToEdit && orderToEdit.status === 'new') {
+        // Przekształć pozycje zamówienia na pozycje koszyka
+        const cartItemsFromOrder = orderToEdit.items.map(item => ({
+          product: products.find(p => p.id === item.productId)!,
+          quantity: item.quantity
+        }))
+        setCartItems(cartItemsFromOrder)
+      }
+    }
+  }, [editOrderId, orders, products])
 
   const handleOrder = () => {
     if (cartItems.length === 0) {
@@ -25,10 +47,15 @@ export default function HomePage() {
       return false
     }
 
-    // Sprawdź dostępność produktów z uwzględnieniem rezerwacji
+    // Sprawdź dostępność produktów
     const unavailableItems = cartItems.filter(item => {
       const product = products.find(p => p.id === item.product.id)
-      return !product || (product.quantity - (product.reserved || 0)) < item.quantity
+      // Jeśli edytujemy zamówienie, nie uwzględniamy obecnej rezerwacji
+      const currentReservation = editOrderId ? 
+        orders.find(o => o.id === parseInt(editOrderId))?.items
+          .find(i => i.productId === item.product.id)?.quantity || 0 
+        : 0
+      return !product || (product.quantity - (product.reserved || 0) + currentReservation) < item.quantity
     })
 
     if (unavailableItems.length > 0) {
@@ -36,9 +63,17 @@ export default function HomePage() {
       return false
     }
 
+    // Jeśli edytujemy, najpierw anulujemy stare zamówienie
+    if (editOrderId) {
+      const oldOrder = orders.find(o => o.id === parseInt(editOrderId))
+      if (oldOrder) {
+        unreserveProducts(oldOrder.items)
+      }
+    }
+
     // Utwórz nowe zamówienie
     const newOrder = {
-      id: Date.now(),
+      id: editOrderId ? parseInt(editOrderId) : Math.floor(Math.random() * 1000000) + Date.now(),
       items: cartItems.map(item => ({
         productId: item.product.id,
         productName: item.product.name,
@@ -48,16 +83,15 @@ export default function HomePage() {
       createdAt: new Date()
     }
 
-    // Zarezerwuj produkty
+    // Zarezerwuj produkty i dodaj zamówienie
     reserveProducts(newOrder.items)
-    
-    // Dodaj zamówienie
     addOrder(newOrder)
     
     // Wyczyść koszyk
     setCartItems([])
     
-    alert('Zamówienie zostało złożone pomyślnie!')
+    alert('Zamówienie zostało zaktualizowane!')
+    router.push('/zamowienia')
     return true
   }
 
@@ -191,6 +225,25 @@ export default function HomePage() {
     handleCloseForm()
   }
 
+  const handleEditOrderSubmit = (items: { productId: number; quantity: number }[], notes: string) => {
+    const oldOrder = orders.find(o => o.id === parseInt(editOrderId!));
+    
+    const updatedOrder: Order = {
+      id: parseInt(editOrderId!),
+      items: items.map(item => ({
+        productId: item.productId,
+        productName: products.find(p => p.id === item.productId)?.name || '',
+        quantity: item.quantity
+      })),
+      status: 'new',
+      createdAt: oldOrder?.createdAt || new Date(),
+      notes
+    };
+
+    addOrder(updatedOrder);
+    router.push('/zamowienia');
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
@@ -228,6 +281,20 @@ export default function HomePage() {
           onClose={handleCloseForm}
           initialData={editingProduct || undefined}
           title={editingProduct ? "Edytuj produkt" : "Dodaj nowy produkt"}
+        />
+      )}
+
+      {editOrderId && (
+        <OrderEditModal
+          order={orders.find(o => o.id === parseInt(editOrderId)) || {
+            id: parseInt(editOrderId),
+            items: [],
+            status: 'new',
+            createdAt: new Date()
+          }}
+          products={products}
+          onClose={() => router.push('/zamowienia')}
+          onSubmit={handleEditOrderSubmit}
         />
       )}
     </div>

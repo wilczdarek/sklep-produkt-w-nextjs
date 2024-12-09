@@ -6,6 +6,7 @@ import Pagination from './Pagination'
 interface OrderListProps {
   orders: Order[];
   onStatusChange: (orderId: number, newStatus: Order['status']) => void;
+  onEditOrder?: (order: Order) => void;
 }
 
 /**
@@ -30,9 +31,9 @@ const STATUS_COLORS: Record<Order['status'], string> = {
   cancelled: 'bg-red-100 text-red-800'  // Dodano styl dla anulowanych
 }
 
-export default function OrderList({ orders, onStatusChange }: OrderListProps) {
+export default function OrderList({ orders, onStatusChange, onEditOrder }: OrderListProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(orders.length / itemsPerPage);
   
   // Oblicz indeksy dla aktualnej strony
@@ -137,10 +138,10 @@ export default function OrderList({ orders, onStatusChange }: OrderListProps) {
                   <PDFDownloadButton order={order} />
                   {order.status === 'new' && (
                     <button
-                      onClick={() => onStatusChange(order.id, 'cancelled')}
-                      className="text-red-600 hover:text-red-900"
+                      onClick={() => onEditOrder?.(order)}
+                      className="text-green-600 hover:text-green-900"
                     >
-                      Anuluj
+                      Edytuj
                     </button>
                   )}
                 </td>

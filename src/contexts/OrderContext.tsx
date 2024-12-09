@@ -26,7 +26,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             createdAt: new Date(order.createdAt)
           }))
           setOrders(ordersWithDates.sort((a, b) => 
-            b.createdAt.getTime() - a.createdAt.getTime()
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           ))
         }
       }
@@ -41,11 +41,24 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   const addOrder = (newOrder: Order) => {
     setOrders(currentOrders => {
-      const updatedOrders = [...currentOrders, newOrder]
-      localStorage.setItem('orders', JSON.stringify(updatedOrders))
-      return updatedOrders
-    })
-  }
+      let updatedOrders;
+      
+      if (currentOrders.some(order => order.id === newOrder.id)) {
+        updatedOrders = currentOrders.map(order =>
+          order.id === newOrder.id ? newOrder : order
+        );
+      } else {
+        updatedOrders = [...currentOrders, newOrder];
+      }
+      
+      updatedOrders.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      
+      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      return updatedOrders;
+    });
+  };
 
   const updateOrderStatus = (orderId: number, newStatus: Order['status']) => {
     setOrders(currentOrders => {

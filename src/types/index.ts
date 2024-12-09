@@ -31,4 +31,5 @@ export interface Order {
   }[];
   status: 'new' | 'accepted' | 'completed' | 'cancelled';
   createdAt: Date;
+  notes?: string; // Dodajemy pole notes
 }

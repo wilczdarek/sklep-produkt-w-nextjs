@@ -3,40 +3,31 @@
 import { useOrders } from '@/contexts/OrderContext'
 import { useProducts } from '@/contexts/ProductContext'
 import OrderList from '@/components/OrderList'
-import Link from 'next/link'
 import { Order } from '@/types'
 import PageHeader from '@/components/PageHeader'
-import Navigation from '@/components/Navigation'
+import { useRouter } from 'next/navigation'
 
-/**
- * Komponent strony zamówień
- */
 export default function OrdersPage() {
-  // Pobierz funkcje i dane z kontekstów
   const { orders, updateOrderStatus, refreshOrders } = useOrders()
   const { unreserveProducts, completeOrder } = useProducts()
+  const router = useRouter()
 
-  /**
-   * Funkcja obsługująca zmianę statusu zamówienia
-   * @param orderId - ID zamówienia
-   * @param newStatus - Nowy status zamówienia
-   */
   const handleOrderStatusChange = (orderId: number, newStatus: Order['status']) => {
-    // Znajdź zamówienie do aktualizacji
     const orderToUpdate = orders.find(order => order.id === orderId)
     if (!orderToUpdate) return
 
-    // Obsłuż różne przypadki zmiany statusu
     if (newStatus === 'cancelled' && orderToUpdate.status !== 'cancelled') {
-      // Przywróć produkty na stan przy anulowaniu zamówienia
       unreserveProducts(orderToUpdate.items)
     } else if (newStatus === 'completed' && orderToUpdate.status !== 'completed') {
-      // Zeruj rezerwację przy realizacji zamówienia
       completeOrder(orderToUpdate.items)
     }
 
-    // Aktualizuj status zamówienia
     updateOrderStatus(orderId, newStatus)
+  }
+
+  const handleEditOrder = (order: Order) => {
+    // Przekierowanie do strony głównej z danymi zamówienia do edycji
+    router.push(`/?editOrder=${order.id}`)
   }
 
   return (
@@ -51,11 +42,11 @@ export default function OrdersPage() {
         </button>
       </div>
       
-      {/* Lista zamówień lub komunikat o braku zamówień */}
       {orders.length > 0 ? (
         <OrderList 
           orders={orders} 
           onStatusChange={handleOrderStatusChange}
+          onEditOrder={handleEditOrder}
         />
       ) : (
         <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500">
@@ -63,5 +54,5 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

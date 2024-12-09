@@ -195,6 +195,14 @@ export function OrderPDF({ order }: OrderPDFProps) {
           </View>
         </View>
 
+        {/* Dodajemy sekcję notatek jeśli istnieją */}
+        {order.notes && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Uwagi</Text>
+            <Text style={styles.orderInfo}>{order.notes}</Text>
+          </View>
+        )}
+
         {/* Sekcja podpisów - nowa struktura */}
         <View style={[styles.signatureContainer, { marginTop: 50 }]}>
           <View style={{ flex: 1, paddingRight: 20 }}>
