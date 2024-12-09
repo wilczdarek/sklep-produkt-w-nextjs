@@ -1,12 +1,11 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
+import type { Metadata } from 'next'
 import { OrderProvider } from '@/contexts/OrderContext'
 import { ProductProvider } from '@/contexts/ProductContext'
+import AppLayout from '@/components/AppLayout'
 
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata = {
-  title: 'Sklep z produktami',
+export const metadata: Metadata = {
+  title: 'Sklep produktów',
   description: 'Aplikacja do zarządzania produktami i zamówieniami',
 }
 
@@ -16,11 +15,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="pl">
       <body>
         <ProductProvider>
           <OrderProvider>
-            {children}
+            <AppLayout>
+              {children}
+            </AppLayout>
           </OrderProvider>
         </ProductProvider>
       </body>

@@ -14,7 +14,7 @@ interface ProductListProps {
 export default function ProductList({ products, onAddToCart, onEdit, onDelete }: ProductListProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(products.length / itemsPerPage);
   
   // Oblicz indeksy dla aktualnej strony

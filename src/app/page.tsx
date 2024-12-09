@@ -192,10 +192,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Navigation currentPath="products" />
-      
-      <div className="flex justify-between items-center mt-8 mb-4">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
         <PageHeader title="Produkty" />
         <button
           onClick={() => setIsFormOpen(true)}

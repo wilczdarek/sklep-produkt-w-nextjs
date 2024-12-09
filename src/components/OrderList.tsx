@@ -1,7 +1,7 @@
 import { Order } from '@/types'
 import { PDFDownloadButton } from './OrderPDF'
 import { useState } from 'react'
-import { Pagination } from './Pagination'
+import Pagination from './Pagination'
 
 interface OrderListProps {
   orders: Order[];
